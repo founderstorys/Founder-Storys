@@ -9,7 +9,7 @@ import {
   Plus, Youtube, Facebook, Linkedin, Twitch, Instagram, Globe, 
   Mic, MonitorPlay, ChevronRight, ChevronDown, X, Radio, Upload, Smartphone, Monitor, Search, Copy, Calendar, Clock, CircleAlert, ArrowLeft, Link as LinkIcon, Server, Key, Mail, Phone, MapPin, ExternalLink, ShieldCheck,
   Loader2, CirclePlay, Activity, Twitter, Laptop, Tag, Percent, Sparkles, MonitorUp, FileType, AlignLeft, Image as ImageIcon, Trash2, CloudUpload, ListTree, Layers, Wand2, Database, Code, Lock,
-  Palette, Zap, TriangleAlert, ShoppingBag, BadgePercent, TrendingUp, Download, Briefcase
+  Palette, Zap, TriangleAlert, ShoppingBag, BadgePercent, TrendingUp, Download, Briefcase, FileVideo
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useData } from '../context/DataContext';
@@ -1309,7 +1309,7 @@ const AdminDashboard: React.FC = () => {
                                           onClick={() => handleApprove(interview.id, interview.applicationType)}
                                           className="px-6 py-3 bg-green-600 text-white rounded-xl text-xs font-black uppercase tracking-widest flex items-center gap-2 hover:bg-green-700 transition shadow-lg"
                                         >
-                                          <CircleCheck size={16} /> Deploy Submission
+                                          <CircleCheck size={16} /> Approve Submission
                                         </button>
                                         <button 
                                           onClick={() => handleReject(interview.id)}
@@ -1320,7 +1320,7 @@ const AdminDashboard: React.FC = () => {
                                       </>
                                     )}
                                     <button className="px-6 py-3 bg-slate-900 text-white rounded-xl text-xs font-black uppercase tracking-widest flex items-center gap-2 hover:bg-black transition shadow-lg">
-                                       <Download size={16} /> Export Data
+                                       <Download size={16} /> Export Dossier
                                     </button>
                                  </div>
                               </div>
@@ -1348,13 +1348,13 @@ const AdminDashboard: React.FC = () => {
                                     </div>
 
                                     <div className="space-y-4">
-                                       <h5 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">The Pitch Narrative</h5>
+                                       <h5 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Full Story Details</h5>
                                        <div className="bg-white p-8 rounded-[32px] border border-slate-100 shadow-inner relative">
                                           <div className="absolute top-4 right-6 opacity-5">
                                              <FileText size={64} />
                                           </div>
                                           <p className="text-slate-700 leading-relaxed font-medium italic">
-                                             "{interview.description || 'No pitch summary was provided for this application.'}"
+                                             "{interview.description || 'No pitch narrative was provided for this application.'}"
                                           </p>
                                        </div>
                                     </div>
@@ -1366,8 +1366,8 @@ const AdminDashboard: React.FC = () => {
                                                 <Calendar size={20} />
                                              </div>
                                              <div>
-                                                <h6 className="text-xs font-black text-red-900 uppercase">Live Broadcast Slot</h6>
-                                                <p className="text-[11px] font-bold text-red-600">{interview.scheduledDate ? new Date(interview.scheduledDate).toLocaleString() : 'Not Scheduled'}</p>
+                                                <h6 className="text-xs font-black text-red-900 uppercase">Booked Session</h6>
+                                                <p className="text-[11px] font-bold text-red-600">{interview.scheduledDate ? new Date(interview.scheduledDate).toLocaleString() : 'Pending Scheduling'}</p>
                                              </div>
                                           </div>
                                        </div>
@@ -1377,16 +1377,16 @@ const AdminDashboard: React.FC = () => {
                                  {/* RIGHT: VIDEO PREVIEW */}
                                  <div className="lg:col-span-7 space-y-6">
                                     <div className="flex items-center justify-between ml-1">
-                                       <h5 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Multimedia Asset Preview</h5>
-                                       <span className="text-[9px] font-black text-blue-600 uppercase tracking-widest bg-blue-50 px-3 py-1 rounded-full border border-blue-100">4K Raw Upload</span>
+                                       <h5 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">High-Quality Asset Preview</h5>
+                                       <span className="text-[9px] font-black text-blue-600 uppercase tracking-widest bg-blue-50 px-3 py-1 rounded-full border border-blue-100">4K Master Source</span>
                                     </div>
                                     
                                     <div className="relative group/player rounded-[40px] overflow-hidden shadow-2xl bg-black border-[12px] border-white ring-1 ring-slate-100">
-                                       {/* WATERMARK REQ: Logo in top right corner */}
-                                       <div className="absolute top-6 right-6 z-20 pointer-events-none opacity-40 select-none">
+                                       {/* WATERMARK REQ: Logo in top right corner of the video */}
+                                       <div className="absolute top-6 right-6 z-20 pointer-events-none opacity-50 select-none drop-shadow-lg">
                                           <div className="flex flex-col items-end">
-                                             <span className="text-xs font-black text-white tracking-tighter uppercase italic">FOUNDER</span>
-                                             <span className="text-xs font-black text-red-500 tracking-tighter uppercase italic -mt-1">STORYS</span>
+                                             <span className="text-[10px] font-black text-white tracking-tighter uppercase italic">FOUNDER</span>
+                                             <span className="text-[10px] font-black text-red-500 tracking-tighter uppercase italic -mt-1">STORYS</span>
                                           </div>
                                        </div>
 
@@ -1397,18 +1397,22 @@ const AdminDashboard: React.FC = () => {
                                           controls
                                        />
                                        
-                                       {/* Download Overlay */}
-                                       <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover/player:opacity-100 transition-opacity flex items-center justify-center">
-                                          <button className="bg-white text-slate-900 px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-3 shadow-2xl transform scale-90 group-hover/player:scale-100 transition-transform">
-                                             <Download size={18} /> Download for Final Edit
-                                          </button>
+                                       {/* Branded Download Overlay */}
+                                       <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover/player:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                                          <div className="bg-white/90 backdrop-blur text-slate-900 px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center gap-2 shadow-2xl">
+                                             <FileVideo size={14} className="text-red-600" /> Previewing Branded Master
+                                          </div>
                                        </div>
                                     </div>
+
+                                    <button className="w-full py-6 bg-slate-900 hover:bg-black text-white rounded-[24px] font-black text-xs uppercase tracking-[0.2em] flex items-center justify-center gap-3 shadow-2xl transition-all hover:-translate-y-1">
+                                       <Download size={20} /> Download Master with Brand Watermark
+                                    </button>
 
                                     <div className="flex items-center gap-4 p-6 bg-slate-50 rounded-3xl border border-slate-100 border-dashed">
                                        <CircleAlert className="text-blue-500 shrink-0" size={20} />
                                        <p className="text-[10px] text-slate-500 font-bold leading-relaxed uppercase tracking-tight">
-                                         Admin Tip: Verify identity documents and brand logos before approving for global broadcast. Check for audio sync and high-bitrate visual clarity.
+                                         Verification: Ensure all brand assets meet network guidelines. Downloads include the global site logo at the 4K render stage.
                                        </p>
                                     </div>
                                  </div>
