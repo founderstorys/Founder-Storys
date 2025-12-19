@@ -7,7 +7,7 @@ import {
   Sidebar, Maximize, Grid3x3, RectangleHorizontal, Play, Plus, Trash2,
   MoreVertical, ChevronDown, Copy, Link as LinkIcon, Facebook, Youtube, Twitch, Linkedin,
   FileAudio, FileVideo, Check, Globe, Radio, Lock, CreditCard, TriangleAlert, Clock,
-  FileText, Headphones, ArrowDownToLine, Loader2
+  FileText, Headphones, ArrowDownToLine, Loader2, Minimize
 } from 'lucide-react';
 import { SOUND_EFFECTS } from '../constants';
 import { useData } from '../context/DataContext';
@@ -526,6 +526,7 @@ const SettingsModal: React.FC<{ isOpen: boolean; onClose: () => void; settings: 
 const Studio: React.FC = () => {
   const { appSettings, interviews } = useData();
   const chatBottomRef = useRef<HTMLDivElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
   
   const scheduledInterview = interviews.find(i => i.status === 'upcoming' && i.applicationType === 'live');
   const hostName = scheduledInterview ? scheduledInterview.founderName : 'You (Host)';
@@ -543,7 +544,6 @@ const Studio: React.FC = () => {
     setSettings(prev => ({ ...prev, [key]: value }));
   };
 
-  // CLEANED PARTICIPANTS: Only Host initially as requested
   const [participants, setParticipants] = useState<Participant[]>([
     { id: 'local-1', name: hostName, type: 'camera', isLocal: true, isOnStage: true, stream: null, muted: false, videoOff: false },
   ]);
@@ -558,6 +558,7 @@ const Studio: React.FC = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [timer, setTimer] = useState(0);
   const [downloadModalReason, setDownloadModalReason] = useState<string>('');
+  const [isFullscreen, setIsFullscreen] = useState(false);
   
   const [showSettings, setShowSettings] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
@@ -579,6 +580,51 @@ const Studio: React.FC = () => {
   const toggleStage = (id: string) => {
     setParticipants(prev => prev.map(p => p.id === id ? { ...p, isOnStage: !p.isOnStage } : p));
   };
+
+  const handleScreenShare = async () => {
+    try {
+      const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+      const screenParticipant: Participant = {
+        id: 'screen-' + Date.now(),
+        name: 'Presentation',
+        type: 'screen',
+        isLocal: true,
+        isOnStage: true,
+        stream: screenStream,
+        muted: true,
+        videoOff: false
+      };
+      setParticipants(prev => [...prev, screenParticipant]);
+      setActiveLayout('sidebar'); // Auto-switch to sidebar for presentation
+      
+      screenStream.getVideoTracks()[0].onended = () => {
+         setParticipants(prev => prev.filter(p => p.id !== screenParticipant.id));
+      };
+    } catch (err) {
+      console.error("Screen share cancelled", err);
+    }
+  };
+
+  const toggleFullscreen = () => {
+    if (!stageRef.current) return;
+    if (!document.fullscreenElement) {
+      stageRef.current.requestFullscreen().catch(err => {
+        console.error(`Error enabling full-screen: ${err.message}`);
+      });
+      setIsFullscreen(true);
+    } else {
+      document.exitFullscreen();
+      setIsFullscreen(false);
+    }
+  };
+
+  useEffect(() => {
+    const handleFsChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFsChange);
+    return () => document.removeEventListener('fullscreenchange', handleFsChange);
+  }, []);
 
   useEffect(() => {
     async function initStream() {
@@ -642,6 +688,8 @@ const Studio: React.FC = () => {
   const activeBanner = banners.find(b => b.isActive);
   const localParticipant = participants.find(p => p.isLocal);
   const activeDestinations = settings.destinations.filter(d => d.enabled);
+  
+  // Logic to put screen share at the leader position
   const sortedActiveParticipants = [...activeParticipants].sort((a, b) => a.type === 'screen' ? -1 : 1);
 
   return (
@@ -696,7 +744,7 @@ const Studio: React.FC = () => {
 
         {/* Studio Stage Canvas */}
         <div className="flex-grow bg-slate-100 p-8 flex flex-col items-center justify-center relative overflow-hidden">
-            <div className={`relative w-full h-full max-h-[80vh] aspect-video transition-all duration-300 group bg-slate-950 rounded-[48px] shadow-2xl p-4 border-[16px] border-white`}>
+            <div ref={stageRef} className={`relative w-full h-full max-h-[80vh] aspect-video transition-all duration-300 group bg-slate-950 rounded-[48px] shadow-2xl p-4 border-[16px] border-white`}>
                 {logo && <img src={logo} alt="Logo" className="absolute top-8 right-8 w-24 z-20 drop-shadow-2xl" />}
                 
                 {activeParticipants.length === 0 ? (
@@ -710,7 +758,11 @@ const Studio: React.FC = () => {
                      </div>
                   </div>
                 ) : (
-                  <div className={`w-full h-full rounded-[32px] overflow-hidden ${activeLayout === 'sidebar' ? 'flex gap-4' : `grid gap-4 ${getGridClass(activeParticipants.length)}`}`}>
+                  <div className={`w-full h-full rounded-[32px] overflow-hidden ${
+                    activeLayout === 'sidebar' ? 'flex gap-4' : 
+                    (activeLayout === 'spotlight' || activeLayout === 'solo') ? 'block' :
+                    `grid gap-4 ${getGridClass(activeParticipants.length)}`
+                  }`}>
                     {activeLayout === 'sidebar' ? (
                         <>
                            <div className="flex-[3] relative rounded-3xl overflow-hidden shadow-2xl border border-white/10">
@@ -724,6 +776,10 @@ const Studio: React.FC = () => {
                               ))}
                            </div>
                         </>
+                    ) : (activeLayout === 'spotlight' || activeLayout === 'solo') ? (
+                       <div className="w-full h-full relative rounded-3xl overflow-hidden shadow-2xl border border-white/10">
+                          <ParticipantFrame participant={sortedActiveParticipants[0]} showName={settings.showNames} brandColor={brandColor} theme={brandTheme} mirrorLocal={settings.mirrorVideo} />
+                       </div>
                     ) : (
                       activeParticipants.map(p => (
                         <div key={p.id} className="relative rounded-3xl overflow-hidden border border-white/5 shadow-2xl">
@@ -756,7 +812,15 @@ const Studio: React.FC = () => {
                <LayoutBtn icon={<RectangleHorizontal size={18}/>} label="Solo" active={activeLayout === 'solo'} onClick={() => setActiveLayout('solo')} />
                <LayoutBtn icon={<Grid3x3 size={18}/>} label="Grid" active={activeLayout === 'grid'} onClick={() => setActiveLayout('grid')} />
                <LayoutBtn icon={<Sidebar size={18}/>} label="Side" active={activeLayout === 'sidebar'} onClick={() => setActiveLayout('sidebar')} />
-               <LayoutBtn icon={<Maximize size={18}/>} label="Full" active={activeLayout === 'spotlight'} onClick={() => setActiveLayout('spotlight')} />
+               <LayoutBtn 
+                icon={isFullscreen ? <Minimize size={18}/> : <Maximize size={18}/>} 
+                label="Spotlight" 
+                active={activeLayout === 'spotlight'} 
+                onClick={() => {
+                  setActiveLayout('spotlight');
+                  toggleFullscreen();
+                }} 
+               />
             </div>
         </div>
 
@@ -789,10 +853,10 @@ const Studio: React.FC = () => {
 
         {/* MAIN TOOLBAR */}
         <div className="h-24 bg-white border-t border-slate-200 flex items-center justify-center gap-6 px-8 z-30">
-             <ToolBtn icon={localParticipant?.muted ? <MicOff size={24}/> : <Mic size={24}/>} label={localParticipant?.muted ? "Unmute" : "Mute"} active={!localParticipant?.muted} onClick={() => setParticipants(prev => prev.map(p => p.isLocal ? {...p, muted: !p.muted} : p))} />
-             <ToolBtn icon={localParticipant?.videoOff ? <VideoOff size={24}/> : <VideoIcon size={24}/>} label={localParticipant?.videoOff ? "Start Cam" : "Stop Cam"} active={!localParticipant?.videoOff} onClick={() => setParticipants(prev => prev.map(p => p.isLocal ? {...p, videoOff: !p.videoOff} : p))} />
+             <ToolBtn icon={localParticipant?.muted ? <MicOff size={24}/> : <Mic size={24}/>} label={localParticipant?.muted ? "Unmute" : "Mute"} active={!localParticipant?.muted} onClick={() => setParticipants(prev => prev.map(p => p.isLocal && p.type === 'camera' ? {...p, muted: !p.muted} : p))} />
+             <ToolBtn icon={localParticipant?.videoOff ? <VideoOff size={24}/> : <VideoIcon size={24}/>} label={localParticipant?.videoOff ? "Start Cam" : "Stop Cam"} active={!localParticipant?.videoOff} onClick={() => setParticipants(prev => prev.map(p => p.isLocal && p.type === 'camera' ? {...p, videoOff: !p.videoOff} : p))} />
              <div className="w-px h-12 bg-slate-200 mx-2"></div>
-             <ToolBtn icon={<MonitorUp size={24}/>} label="Screen" onClick={() => {}} />
+             <ToolBtn icon={<MonitorUp size={24}/>} label="Screen" onClick={handleScreenShare} active={!participants.some(p => p.type === 'screen' && p.isLocal)} />
              <ToolBtn icon={<Users size={24}/>} label="Guest" onClick={() => setShowInviteModal(true)} />
              <div className="w-px h-12 bg-slate-200 mx-2"></div>
              <ToolBtn icon={<Settings size={24}/>} label="Settings" onClick={() => setShowSettings(true)} />
@@ -890,7 +954,7 @@ const Studio: React.FC = () => {
 
 const ParticipantFrame: React.FC<{ participant: Participant, showName: boolean, brandColor: string, theme: string, small?: boolean, mirrorLocal?: boolean }> = ({ participant, showName, brandColor, theme, small, mirrorLocal }) => (
   <>
-    <VideoComponent stream={participant.stream} poster={participant.avatarUrl} isMuted={participant.isLocal} videoOff={participant.videoOff} className="w-full h-full" mirror={participant.isLocal && mirrorLocal} />
+    <VideoComponent stream={participant.stream} poster={participant.avatarUrl} isMuted={participant.isLocal} videoOff={participant.videoOff} className="w-full h-full" mirror={participant.isLocal && mirrorLocal && participant.type === 'camera'} />
     {showName && (
       <div className={`absolute left-6 z-10 ${small ? 'bottom-3 left-3' : 'bottom-6 left-6'}`}>
         <div className="bg-white/90 backdrop-blur-xl text-slate-900 px-4 py-2 rounded-2xl border-l-8 shadow-2xl flex items-center gap-3 transition-all" style={{ borderLeftColor: brandColor }}>
