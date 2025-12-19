@@ -1,3 +1,4 @@
+
 import React, { createContext, useState, useContext } from 'react';
 import { Interview, AppSettings, User, SubscriptionPlan } from '../types';
 import { MOCK_INTERVIEWS } from '../constants';
@@ -70,7 +71,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (email.includes('admin')) {
       setCurrentUser({
         id: 'admin-1',
-        name: 'Admin User',
+        name: 'Platform Admin',
         email: email,
         avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=200&auto=format&fit=crop',
         role: 'admin'

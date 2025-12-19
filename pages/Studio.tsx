@@ -8,7 +8,7 @@ import {
   MoreVertical, ChevronDown, Copy, Link as LinkIcon, Facebook, Youtube, Twitch, Linkedin,
   FileAudio, FileVideo, Check, Globe, Radio, Lock, CreditCard, TriangleAlert, Clock,
   FileText, Headphones, ArrowDownToLine, Loader2, Minimize, Wand2, Sparkles, HelpCircle, 
-  ChevronUp
+  ChevronUp, UserCheck
 } from 'lucide-react';
 import { SOUND_EFFECTS } from '../constants';
 import { useData } from '../context/DataContext';
@@ -361,19 +361,19 @@ const SettingsModal: React.FC<{ isOpen: boolean; onClose: () => void; settings: 
 // --- Main Component ---
 
 const Studio: React.FC = () => {
-  const { appSettings, interviews } = useData();
+  const { appSettings, interviews, currentUser } = useData();
   const chatBottomRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   
   const scheduledInterview = interviews.find(i => i.status === 'upcoming' && i.applicationType === 'live');
-  const hostName = scheduledInterview ? scheduledInterview.founderName : 'You (Host)';
+  const initialHostName = scheduledInterview ? scheduledInterview.founderName : (currentUser?.name || 'Broadcaster');
   
   const [settings, setSettings] = useState<StudioSettings>({
     resolution: '1080p', frameRate: '30fps', audioEchoCancel: true, showNames: true, mirrorVideo: true, destinations: []
   });
 
   const [participants, setParticipants] = useState<Participant[]>([
-    { id: 'local-1', name: hostName, type: 'camera', isLocal: true, isOnStage: true, stream: null, muted: false, videoOff: false },
+    { id: 'local-1', name: initialHostName, type: 'camera', isLocal: true, isOnStage: true, stream: null, muted: false, videoOff: false },
   ]);
   
   const [banners, setBanners] = useState<Banner[]>([
@@ -401,7 +401,7 @@ const Studio: React.FC = () => {
   const [studioBackground, setStudioBackground] = useState<string>('https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=2070&auto=format&fit=crop');
 
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
-      { id: '1', sender: 'Producer', text: 'Ready for broadcast. Audio levels look great.', time: '10:00 AM', avatarColor: 'bg-slate-900' }
+      { id: '1', sender: 'Control Room', text: 'Ready for broadcast. Audio levels look great.', time: 'System', avatarColor: 'bg-slate-900' }
   ]);
   const [chatInput, setChatInput] = useState('');
   const [bannerInput, setBannerInput] = useState('');
@@ -424,6 +424,10 @@ const Studio: React.FC = () => {
     { id: 'starting', name: 'Stream starting...', duration: '0:15', url: '' },
     { id: 'brb', name: 'Be Right Back', duration: '0:15', url: '' },
   ];
+
+  const updateHostName = (newName: string) => {
+    setParticipants(prev => prev.map(p => p.id === 'local-1' ? { ...p, name: newName } : p));
+  };
 
   const toggleStage = (id: string) => {
     setParticipants(prev => prev.map(p => p.id === id ? { ...p, isOnStage: !p.isOnStage } : p));
@@ -485,7 +489,6 @@ const Studio: React.FC = () => {
 
         <div className="flex-grow bg-slate-100 p-8 flex flex-col items-center justify-center relative overflow-hidden">
             <div ref={stageRef} className="relative w-full h-full max-h-[80vh] aspect-video transition-all duration-300 group rounded-[48px] shadow-2xl p-4 border-[16px] border-white overflow-hidden">
-                {/* Dynamic Studio Background */}
                 <div className="absolute inset-0 z-0">
                   <img src={studioBackground} className="w-full h-full object-cover" alt="Stage Bg" />
                   <div className="absolute inset-0 bg-black/20" />
@@ -539,7 +542,7 @@ const Studio: React.FC = () => {
         </div>
 
         <div className="h-40 bg-white border-t border-slate-200 flex items-center px-8 gap-6 overflow-x-auto relative z-20 shadow-[0_-10px_30px_rgba(0,0,0,0.02)]">
-            <button onClick={() => setShowInviteModal(true)} className="flex-shrink-0 w-44 h-28 border-4 border-dashed border-slate-100 rounded-3xl flex flex-col items-center justify-center text-slate-300 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50 transition-all group"><div className="p-3 rounded-2xl bg-slate-50 group-hover:bg-blue-100 mb-2 transition-colors"><Plus size={24} /></div><p className="text-[10px] font-black uppercase tracking-widest">Add Guest</p></button>
+            <button onClick={() => setShowInviteModal(true)} className="flex-shrink-0 w-44 h-28 border-4 border-dashed border-slate-100 rounded-3xl flex flex-col items-center justify-center text-slate-300 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50 transition-all group"><div className="p-3 rounded-2xl bg-slate-50 group-hover:bg-blue-100 mb-2 transition-colors"><Plus size={24} /></div><p className="text-[10px] font-black uppercase tracking-widest">Invite Guest</p></button>
             {participants.map(p => (
               <div key={p.id} className={`group relative flex-shrink-0 w-44 h-28 rounded-3xl overflow-hidden border-4 transition-all shadow-sm ${p.isOnStage ? 'border-blue-600 ring-8 ring-blue-50' : 'border-slate-50 opacity-60 hover:opacity-100 hover:border-slate-200'}`}>
                  <VideoComponent stream={p.stream} poster={p.avatarUrl} isMuted={true} videoOff={p.videoOff} className="w-full h-full" mirror={p.isLocal && settings.mirrorVideo} />
@@ -555,7 +558,7 @@ const Studio: React.FC = () => {
              <ToolBtn icon={localParticipant?.videoOff ? <VideoOff size={24}/> : <VideoIcon size={24}/>} label={localParticipant?.videoOff ? "Start Cam" : "Stop Cam"} active={!localParticipant?.videoOff} onClick={() => setParticipants(prev => prev.map(p => p.isLocal && p.type === 'camera' ? {...p, videoOff: !p.videoOff} : p))} />
              <div className="w-px h-12 bg-slate-200 mx-2"></div>
              <ToolBtn icon={<MonitorUp size={24}/>} label="Screen" onClick={handleScreenShare} active={!participants.some(p => p.type === 'screen' && p.isLocal)} />
-             <ToolBtn icon={<Users size={24}/>} label="Guest" onClick={() => setShowInviteModal(true)} />
+             <ToolBtn icon={<Users size={24}/>} label="Invite" onClick={() => setShowInviteModal(true)} />
              <div className="w-px h-12 bg-slate-200 mx-2"></div>
              <ToolBtn icon={<Settings size={24}/>} label="Settings" onClick={() => setShowSettings(true)} />
         </div>
@@ -572,7 +575,23 @@ const Studio: React.FC = () => {
 
           <div className="flex-grow overflow-y-auto p-8 custom-scrollbar">
               {activeTab === 'brand' && (
-                <div className="space-y-10 animate-in slide-in-from-right-4">
+                <div className="space-y-12 animate-in slide-in-from-right-4">
+                    {/* Broadcaster Identity */}
+                    <div className="space-y-4">
+                       <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+                          <UserCheck size={14} className="text-blue-600"/> Display Identity
+                       </h3>
+                       <div className="space-y-2">
+                          <label className="text-[9px] font-black text-slate-300 uppercase tracking-widest ml-1">Broadcaster Name</label>
+                          <input 
+                            value={participants.find(p => p.id === 'local-1')?.name || ''}
+                            onChange={(e) => updateHostName(e.target.value)}
+                            className="w-full bg-slate-50 border-none rounded-xl px-5 py-4 text-sm font-bold text-slate-900 focus:ring-4 focus:ring-blue-500/5 outline-none shadow-inner"
+                            placeholder="Enter your stage name"
+                          />
+                       </div>
+                    </div>
+
                     <div>
                       <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Master Highlight</h3>
                       <div className="flex gap-3 flex-wrap">{['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'].map(color => (<button key={color} onClick={() => setBrandColor(color)} className={`w-10 h-10 rounded-2xl border-4 transition-all hover:scale-110 ${brandColor === color ? 'border-white ring-4 ring-slate-100 shadow-lg' : 'border-white border-opacity-50'}`} style={{ backgroundColor: color }} />))}</div>
@@ -594,7 +613,6 @@ const Studio: React.FC = () => {
                           <button className="text-slate-400"><ChevronUp size={20}/></button>
                        </div>
                        
-                       {/* AI GENERATE BUTTON */}
                        <button 
                          onClick={() => setShowAIModal(true)}
                          className="w-full py-4 rounded-xl border-2 border-[#E0E7FF] bg-white flex items-center justify-center gap-3 text-slate-700 font-bold hover:bg-slate-50 transition-all relative overflow-hidden group shadow-sm"
@@ -606,7 +624,6 @@ const Studio: React.FC = () => {
                           AI Generate
                        </button>
 
-                       {/* GRID OF PRESETS */}
                        <div className="grid grid-cols-3 gap-x-3 gap-y-6">
                           {BACKGROUNDS.map(bg => (
                              <button key={bg.id} onClick={() => setStudioBackground(bg.url)} className="group space-y-2 text-left">
@@ -686,7 +703,7 @@ const Studio: React.FC = () => {
               {activeTab === 'chat' && (
                 <div className="flex flex-col h-full animate-in slide-in-from-right-4">
                    <div className="flex-grow space-y-6 mb-6">{chatMessages.map(msg => (<div key={msg.id} className="flex gap-4 group"><div className={`w-10 h-10 rounded-2xl flex-shrink-0 flex items-center justify-center text-[10px] font-black text-white shadow-xl ${msg.avatarColor} transition-transform group-hover:scale-110`}>{msg.sender.charAt(0)}</div><div><div className="flex items-baseline gap-3"><span className="text-xs font-black uppercase text-slate-900 tracking-tight">{msg.sender}</span><span className="text-[9px] font-bold text-slate-400">{msg.time}</span></div><p className="text-sm text-slate-500 font-medium mt-1 leading-relaxed">{msg.text}</p></div></div>))}<div ref={chatBottomRef} /></div>
-                   <form onSubmit={(e) => { e.preventDefault(); if (!chatInput.trim()) return; setChatMessages([...chatMessages, { id: Date.now().toString(), sender: 'You', text: chatInput, time: 'Live', avatarColor: 'bg-red-600' }]); setChatInput(''); }} className="relative"><input className="w-full bg-slate-50 border border-slate-200 rounded-2xl pl-6 pr-14 py-5 text-sm font-bold focus:border-blue-600 transition outline-none shadow-inner" placeholder="Host communication..." value={chatInput} onChange={(e) => setChatInput(e.target.value)} /><button type="submit" className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-slate-900 text-white rounded-xl flex items-center justify-center hover:bg-black transition shadow-lg"><Zap size={18} fill="currentColor" /></button></form>
+                   <form onSubmit={(e) => { e.preventDefault(); if (!chatInput.trim()) return; setChatMessages([...chatMessages, { id: Date.now().toString(), sender: 'Broadcaster', text: chatInput, time: 'Live', avatarColor: 'bg-red-600' }]); setChatInput(''); }} className="relative"><input className="w-full bg-slate-50 border border-slate-200 rounded-2xl pl-6 pr-14 py-5 text-sm font-bold focus:border-blue-600 transition outline-none shadow-inner" placeholder="Host communication..." value={chatInput} onChange={(e) => setChatInput(e.target.value)} /><button type="submit" className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-slate-900 text-white rounded-xl flex items-center justify-center hover:bg-black transition shadow-lg"><Zap size={18} fill="currentColor" /></button></form>
                 </div>
               )}
           </div>
