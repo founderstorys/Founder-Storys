@@ -6,7 +6,8 @@ import {
   Image as ImageIcon, Type, MousePointer2, X, CircleCheck, GripVertical,
   Sidebar, Maximize, Grid3x3, RectangleHorizontal, Play, Plus, Trash2,
   MoreVertical, ChevronDown, Copy, Link as LinkIcon, Facebook, Youtube, Twitch, Linkedin,
-  FileAudio, FileVideo, Check, Globe, Radio, Lock, CreditCard, TriangleAlert, Clock
+  FileAudio, FileVideo, Check, Globe, Radio, Lock, CreditCard, TriangleAlert, Clock,
+  FileText, Headphones, ArrowDownToLine, Loader2
 } from 'lucide-react';
 import { SOUND_EFFECTS } from '../constants';
 import { useData } from '../context/DataContext';
@@ -61,26 +62,14 @@ interface StudioSettings {
   destinations: Destination[];
 }
 
-// --- Constants ---
-
-const MOCK_GUESTS: Participant[] = [
-  { id: 'guest-1', name: 'Sarah (Design)', type: 'camera', isLocal: false, isOnStage: false, stream: null, avatarUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=400&auto=format&fit=crop', muted: false, videoOff: false },
-  { id: 'guest-2', name: 'David (Tech)', type: 'camera', isLocal: false, isOnStage: false, stream: null, avatarUrl: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=400&auto=format&fit=crop', muted: true, videoOff: false },
-  { id: 'guest-3', name: 'Michael (Marketing)', type: 'camera', isLocal: false, isOnStage: false, stream: null, avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=400&auto=format&fit=crop', muted: false, videoOff: false },
-  { id: 'guest-4', name: 'Elena (CEO)', type: 'camera', isLocal: false, isOnStage: false, stream: null, avatarUrl: 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?q=80&w=400&auto=format&fit=crop', muted: false, videoOff: false },
-  { id: 'guest-5', name: 'James (Product)', type: 'camera', isLocal: false, isOnStage: false, stream: null, avatarUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=400&auto=format&fit=crop', muted: true, videoOff: true },
-];
-
 // --- Helpers ---
 
-// Fix for: Error in file pages/Studio.tsx on line 640: Cannot find name 'formatTime'.
 const formatTime = (seconds: number) => {
   const mins = Math.floor(seconds / 60);
   const secs = seconds % 60;
   return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 };
 
-// Fix for: Error in file pages/Studio.tsx on line 676: Cannot find name 'getGridClass'.
 const getGridClass = (count: number) => {
   if (count <= 1) return 'grid-cols-1';
   if (count <= 2) return 'grid-cols-2';
@@ -205,89 +194,116 @@ const ShareBroadcastModal: React.FC<{ isOpen: boolean; onClose: () => void; acti
 };
 
 const DownloadModal: React.FC<{ isOpen: boolean; onClose: () => void; settings: StudioSettings; reason?: string }> = ({ isOpen, onClose, settings, reason }) => {
-  const [isPaying, setIsPaying] = useState(false);
-  const [hasPaid, setHasPaid] = useState(false);
-  
-  const is4K = settings.resolution === '4k';
-  
-  const handlePayment = () => {
-    setIsPaying(true);
-    setTimeout(() => {
-      setIsPaying(false);
-      setHasPaid(true);
-    }, 2000);
+  const [downloadingMaster, setDownloadingMaster] = useState(false);
+
+  // Functional simulated download
+  const handleDownload = (filename: string, ext: string = 'mp4') => {
+     setDownloadingMaster(true);
+     
+     // Simulate file generation and trigger download
+     setTimeout(() => {
+        const blob = new Blob(["This is a simulated broadcast file."], { type: 'application/octet-stream' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${filename}.${ext}`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        setDownloadingMaster(false);
+     }, 2000);
   };
 
   if (!isOpen) return null;
+  
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-md animate-in fade-in duration-200">
-       <div className="bg-white w-full max-w-2xl rounded-[40px] border border-slate-200 shadow-2xl p-12">
-          <div className="flex items-center gap-4 mb-10">
-             <div className="w-16 h-16 rounded-3xl bg-green-50 flex items-center justify-center text-green-600 border border-green-100 shadow-sm">
-                <CircleCheck size={32} />
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-white/40 backdrop-blur-xl animate-in fade-in duration-300 p-4">
+       <div className="bg-white w-full max-w-[800px] rounded-[60px] shadow-[0_40px_100px_rgba(0,0,0,0.15)] border border-slate-100 p-12 md:p-16 flex flex-col relative overflow-hidden">
+          
+          {/* Header Section */}
+          <div className="flex items-center gap-8 mb-16 animate-in slide-in-from-top-4 duration-500">
+             <div className="w-20 h-20 rounded-full bg-green-50 flex items-center justify-center text-green-500 shadow-[0_10px_30px_rgba(34,197,94,0.1)] border border-green-100">
+                <CircleCheck size={44} strokeWidth={2.5} />
              </div>
              <div>
-                <h2 className="text-3xl font-black text-slate-900 tracking-tight uppercase italic">Session Wrapped</h2>
-                <p className="text-slate-500 font-medium">{reason || "The broadcast tracks have been finalized."}</p>
+                <h2 className="text-4xl font-black text-slate-900 tracking-tighter uppercase italic leading-none mb-3">Session Wrapped</h2>
+                <p className="text-slate-400 text-lg font-bold">The broadcast tracks have been finalized.</p>
              </div>
           </div>
 
-          <div className="space-y-6 mb-12">
-             {/* Main Composed Video */}
-             <div className={`border rounded-3xl p-6 flex items-center justify-between group transition-all duration-300 ${is4K && !hasPaid ? 'border-yellow-200 bg-yellow-50/50' : 'border-slate-100 bg-slate-50/50 hover:border-blue-500 hover:bg-white hover:shadow-xl'}`}>
-                 <div className="flex items-center gap-6">
-                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-white font-black text-xs shadow-lg ${is4K ? 'bg-gradient-to-tr from-yellow-500 to-orange-500' : 'bg-blue-600'}`}>MP4</div>
-                    <div>
-                       <h4 className="text-slate-900 font-black uppercase tracking-tight">Master Composed File</h4>
-                       <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">{settings.resolution} • Variable Frame Rate</p>
-                    </div>
-                 </div>
-                 
-                 {is4K && !hasPaid ? (
-                    <button 
-                      onClick={handlePayment}
-                      disabled={isPaying}
-                      className="px-6 py-3 bg-slate-900 hover:bg-black text-white rounded-xl text-xs font-black uppercase tracking-widest transition shadow-lg"
-                    >
-                       {isPaying ? 'Processing...' : <><CreditCard size={16} className="inline mr-2"/> Pay Upgrade ($29)</>}
-                    </button>
-                 ) : (
-                    <button className="px-6 py-3 bg-white border border-slate-200 hover:border-blue-600 hover:text-blue-600 rounded-xl text-xs font-black uppercase tracking-widest transition shadow-sm">
-                       <Download size={16} className="inline mr-2" /> Download
-                    </button>
-                 )}
-              </div>
-              
-              {is4K && !hasPaid && (
-                  <div className="text-[10px] text-yellow-600 text-center flex items-center justify-center gap-1 font-black uppercase tracking-widest bg-yellow-50 py-2 rounded-full">
-                     <Lock size={12} /> 1080p and 720p versions are unlocked by default.
-                  </div>
-              )}
+          {/* Master Composed File Card */}
+          <div className="bg-white border-2 border-slate-50 rounded-[40px] p-8 md:p-10 flex flex-col md:flex-row items-center justify-between shadow-[0_20px_50px_rgba(0,0,0,0.03)] mb-8 transition-all hover:shadow-2xl hover:shadow-slate-100">
+             <div className="flex items-center gap-8 mb-8 md:mb-0">
+                <div className="w-24 h-24 bg-[#2563eb] rounded-[32px] flex items-center justify-center text-white font-black text-xl shadow-[0_15px_30px_rgba(37,99,235,0.3)]">
+                   MP4
+                </div>
+                <div className="text-center md:text-left">
+                   <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tighter mb-1">Master Composed File</h3>
+                   <p className="text-sm font-black text-slate-300 uppercase tracking-[0.2em]">{settings.resolution} • Variable Frame Rate</p>
+                </div>
+             </div>
+             <button 
+                onClick={() => handleDownload('Master_Broadcast')}
+                disabled={downloadingMaster}
+                className="bg-white border-2 border-slate-100 hover:border-slate-900 px-10 py-5 rounded-[24px] flex items-center gap-4 transition-all group active:scale-95 disabled:opacity-50"
+             >
+                {downloadingMaster ? (
+                   <Loader2 className="animate-spin text-slate-900" size={24}/>
+                ) : (
+                   <Download className="text-slate-900 group-hover:translate-y-0.5 transition-transform" size={24} />
+                )}
+                <span className="text-sm font-black uppercase tracking-[0.2em] text-slate-900">{downloadingMaster ? 'Finalizing...' : 'Download'}</span>
+             </button>
+          </div>
 
-             {/* Separate Tracks */}
-             <div className="bg-slate-50 border border-slate-100 rounded-3xl p-8">
-                 <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-6">High Fidelity Multi-Tracks</h4>
-                 <div className="space-y-4">
-                    <div className="flex items-center justify-between p-4 bg-white rounded-2xl border border-slate-100 hover:shadow-md transition shadow-sm">
-                        <div className="flex items-center gap-4">
-                           <FileVideo size={20} className="text-purple-600"/>
-                           <span className="text-sm font-bold text-slate-900">Host Primary Video</span>
-                        </div>
-                        <Download size={20} className="text-slate-300 hover:text-slate-900 cursor-pointer transition-colors"/>
-                    </div>
-                    <div className="flex items-center justify-between p-4 bg-white rounded-2xl border border-slate-100 hover:shadow-md transition shadow-sm">
-                        <div className="flex items-center gap-4">
-                           <FileAudio size={20} className="text-orange-600"/>
-                           <span className="text-sm font-bold text-slate-900">Lossless Master Audio (WAV)</span>
-                        </div>
-                        <Download size={20} className="text-slate-300 hover:text-slate-900 cursor-pointer transition-colors"/>
-                    </div>
-                 </div>
+          {/* High Fidelity Multi-Tracks Section */}
+          <div className="bg-[#f8fafc] rounded-[48px] p-10 md:p-12 mb-12">
+             <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.4em] mb-10 text-center md:text-left">High Fidelity Multi-Tracks</h4>
+             
+             <div className="space-y-6">
+                {/* Track Row 1 */}
+                <div className="bg-white p-6 md:p-8 rounded-[32px] flex items-center justify-between shadow-sm border border-slate-50 transition-all hover:shadow-md hover:scale-[1.01]">
+                   <div className="flex items-center gap-6">
+                      <div className="text-[#8b5cf6]">
+                         <FileVideo size={32} />
+                      </div>
+                      <span className="text-xl font-black text-slate-900 tracking-tight">Host Primary Video</span>
+                   </div>
+                   <button 
+                     onClick={() => handleDownload('Host_Video')}
+                     className="text-slate-200 hover:text-slate-900 transition-colors"
+                   >
+                      <ArrowDownToLine size={28} />
+                   </button>
+                </div>
+
+                {/* Track Row 2 */}
+                <div className="bg-white p-6 md:p-8 rounded-[32px] flex items-center justify-between shadow-sm border border-slate-50 transition-all hover:shadow-md hover:scale-[1.01]">
+                   <div className="flex items-center gap-6">
+                      <div className="text-[#f97316]">
+                         <Headphones size={32} />
+                      </div>
+                      <span className="text-xl font-black text-slate-900 tracking-tight">Lossless Master Audio (WAV)</span>
+                   </div>
+                   <button 
+                     onClick={() => handleDownload('Master_Audio', 'wav')}
+                     className="text-slate-200 hover:text-slate-900 transition-colors"
+                   >
+                      <ArrowDownToLine size={28} />
+                   </button>
+                </div>
              </div>
           </div>
 
-          <div className="flex justify-end gap-4">
-             <button onClick={onClose} className="px-10 py-4 bg-slate-900 text-white font-black uppercase tracking-widest text-xs rounded-2xl hover:bg-black transition shadow-xl shadow-slate-900/20">Exit Session</button>
+          {/* Footer Actions */}
+          <div className="flex justify-center md:justify-end">
+             <button 
+                onClick={onClose}
+                className="bg-[#0f172a] text-white px-16 py-6 rounded-[28px] font-black text-xs uppercase tracking-[0.3em] shadow-[0_20px_50px_rgba(15,23,42,0.3)] hover:bg-black hover:-translate-y-1 transition-all active:translate-y-0"
+             >
+                Exit Session
+             </button>
           </div>
        </div>
     </div>
@@ -527,9 +543,9 @@ const Studio: React.FC = () => {
     setSettings(prev => ({ ...prev, [key]: value }));
   };
 
+  // CLEANED PARTICIPANTS: Only Host initially as requested
   const [participants, setParticipants] = useState<Participant[]>([
     { id: 'local-1', name: hostName, type: 'camera', isLocal: true, isOnStage: true, stream: null, muted: false, videoOff: false },
-    ...MOCK_GUESTS
   ]);
   
   const [banners, setBanners] = useState<Banner[]>([
@@ -560,7 +576,6 @@ const Studio: React.FC = () => {
   const [chatInput, setChatInput] = useState('');
   const [bannerInput, setBannerInput] = useState('');
 
-  // Fix for: Error in file pages/Studio.tsx on line 745: Cannot find name 'toggleStage'.
   const toggleStage = (id: string) => {
     setParticipants(prev => prev.map(p => p.id === id ? { ...p, isOnStage: !p.isOnStage } : p));
   };
@@ -628,7 +643,6 @@ const Studio: React.FC = () => {
   const localParticipant = participants.find(p => p.isLocal);
   const activeDestinations = settings.destinations.filter(d => d.enabled);
   const sortedActiveParticipants = [...activeParticipants].sort((a, b) => a.type === 'screen' ? -1 : 1);
-  const timeProgress = Math.min((timer / appSettings.maxLiveDuration) * 100, 100);
 
   return (
     <div className="h-[calc(100vh-64px)] bg-[#f1f5f9] text-slate-900 flex overflow-hidden font-sans">
@@ -651,7 +665,7 @@ const Studio: React.FC = () => {
              )}
              
              {!isLive && (
-               <div className="bg-slate-50 border border-slate-200 px-4 py-2 rounded-xl flex items-center gap-3">
+               <div className="bg-slate-50 border border-slate-200 px-4 py-2 rounded-xl flex items-center justify-center gap-3">
                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Studio Connection Optimized</span>
                </div>
@@ -680,7 +694,7 @@ const Studio: React.FC = () => {
           </div>
         </div>
 
-        {/* Studio Stage Canvas - Main Area Stays Dark for Video Clarity */}
+        {/* Studio Stage Canvas */}
         <div className="flex-grow bg-slate-100 p-8 flex flex-col items-center justify-center relative overflow-hidden">
             <div className={`relative w-full h-full max-h-[80vh] aspect-video transition-all duration-300 group bg-slate-950 rounded-[48px] shadow-2xl p-4 border-[16px] border-white`}>
                 {logo && <img src={logo} alt="Logo" className="absolute top-8 right-8 w-24 z-20 drop-shadow-2xl" />}
@@ -746,7 +760,7 @@ const Studio: React.FC = () => {
             </div>
         </div>
 
-        {/* --- DOCK / GREEN ROOM --- */}
+        {/* GREEN ROOM - Only Add Guest and Host shown here initially */}
         <div className="h-40 bg-white border-t border-slate-200 flex items-center px-8 gap-6 overflow-x-auto relative z-20 shadow-[0_-10px_30px_rgba(0,0,0,0.02)]">
             <button onClick={() => setShowInviteModal(true)} className="flex-shrink-0 w-44 h-28 border-4 border-dashed border-slate-100 rounded-3xl flex flex-col items-center justify-center text-slate-300 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50 transition-all group">
                <div className="p-3 rounded-2xl bg-slate-50 group-hover:bg-blue-100 mb-2 transition-colors">
@@ -773,7 +787,7 @@ const Studio: React.FC = () => {
             ))}
         </div>
 
-        {/* --- MAIN TOOLBAR --- */}
+        {/* MAIN TOOLBAR */}
         <div className="h-24 bg-white border-t border-slate-200 flex items-center justify-center gap-6 px-8 z-30">
              <ToolBtn icon={localParticipant?.muted ? <MicOff size={24}/> : <Mic size={24}/>} label={localParticipant?.muted ? "Unmute" : "Mute"} active={!localParticipant?.muted} onClick={() => setParticipants(prev => prev.map(p => p.isLocal ? {...p, muted: !p.muted} : p))} />
              <ToolBtn icon={localParticipant?.videoOff ? <VideoOff size={24}/> : <VideoIcon size={24}/>} label={localParticipant?.videoOff ? "Start Cam" : "Stop Cam"} active={!localParticipant?.videoOff} onClick={() => setParticipants(prev => prev.map(p => p.isLocal ? {...p, videoOff: !p.videoOff} : p))} />
@@ -785,7 +799,7 @@ const Studio: React.FC = () => {
         </div>
       </div>
 
-      {/* ================= RIGHT SECTION: PRODUCTION SIDEBAR ================= */}
+      {/* RIGHT SECTION: PRODUCTION SIDEBAR */}
       <div className="w-96 bg-white border-l border-slate-200 flex flex-col z-20 shadow-2xl">
           <div className="flex border-b border-slate-200 bg-slate-50/50 p-2 gap-1">
              <TabBtn label="Brand" active={activeTab === 'brand'} onClick={() => setActiveTab('brand')} icon={<Palette size={16}/>} />
