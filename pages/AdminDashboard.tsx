@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { 
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, AreaChart, Area 
@@ -8,7 +9,7 @@ import {
   Plus, Youtube, Facebook, Linkedin, Twitch, Instagram, Globe, 
   Mic, MonitorPlay, ChevronRight, ChevronDown, X, Radio, Upload, Smartphone, Monitor, Search, Copy, Calendar, Clock, CircleAlert, ArrowLeft, Link as LinkIcon, Server, Key, Mail, Phone, MapPin, ExternalLink, ShieldCheck,
   Loader2, CirclePlay, Activity, Twitter, Laptop, Tag, Percent, Sparkles, MonitorUp, FileType, AlignLeft, Image as ImageIcon, Trash2, CloudUpload, ListTree, Layers, Wand2, Database, Code, Lock,
-  Palette, Zap, TriangleAlert, ShoppingBag, BadgePercent, TrendingUp
+  Palette, Zap, TriangleAlert, ShoppingBag, BadgePercent, TrendingUp, Download, Briefcase
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useData } from '../context/DataContext';
@@ -201,7 +202,7 @@ const AdminSettingsModal: React.FC<{ isOpen: boolean; onClose: () => void }> = (
                                     </div>
                                  </div>
                                  <div className="space-y-2">
-                                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Discount %</label>
+                                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block ml-1">Discount %</label>
                                     <input 
                                        type="number"
                                        value={plan.discountPercentage}
@@ -1170,53 +1171,51 @@ const AdminDashboard: React.FC = () => {
 
       <div className="max-w-[1440px] mx-auto px-8 pt-10 space-y-12">
         
-        {/* ACTION SECTION */}
-        <section className="space-y-6">
-          <div className="flex items-center justify-between">
-             <h2 className="text-xl font-black text-slate-800 tracking-tight uppercase">Control Center</h2>
-             <div className="h-px flex-1 mx-8 bg-slate-200"></div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-6">
-              
-              <button onClick={() => navigate('/studio')} className="bg-red-600 p-6 rounded-3xl border-4 border-red-500 hover:bg-red-700 hover:shadow-2xl hover:shadow-red-900/30 transition group flex flex-col gap-4 text-left shadow-xl shadow-red-900/20">
-                <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center text-white group-hover:scale-110 transition-transform">
-                    <Radio size={24} className="animate-pulse" />
-                </div>
-                <span className="font-black text-white text-lg uppercase tracking-tighter">Enter Studio</span>
-              </button>
+        {/* ACTION SECTION - Restricted to Admins */}
+        {isAdmin && (
+          <section className="space-y-6">
+            <div className="flex items-center justify-between">
+               <h2 className="text-xl font-black text-slate-800 tracking-tight uppercase">Control Center</h2>
+               <div className="h-px flex-1 mx-8 bg-slate-200"></div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-6">
+                
+                <button onClick={() => navigate('/studio')} className="bg-red-600 p-6 rounded-3xl border-4 border-red-500 hover:bg-red-700 hover:shadow-2xl hover:shadow-red-900/30 transition group flex flex-col gap-4 text-left shadow-xl shadow-red-900/20">
+                  <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center text-white group-hover:scale-110 transition-transform">
+                      <Radio size={24} className="animate-pulse" />
+                  </div>
+                  <span className="font-black text-white text-lg uppercase tracking-tighter">Enter Studio</span>
+                </button>
 
-              {isAdmin && (
-                <>
-                  <button onClick={() => setShowEpisodeModal(true)} className="bg-white p-6 rounded-3xl border border-slate-100 hover:border-blue-500 hover:shadow-2xl transition group flex flex-col gap-4 text-left shadow-xl shadow-slate-200/50">
-                    <div className="w-12 h-12 bg-red-50 rounded-2xl flex items-center justify-center text-red-600 group-hover:scale-110 transition-transform">
-                        <MonitorPlay size={24} />
-                    </div>
-                    <span className="font-black text-slate-800 text-lg uppercase tracking-tighter">Upload Episode</span>
-                  </button>
-                  <button onClick={() => setShowArticleModal(true)} className="bg-white p-6 rounded-3xl border border-slate-100 hover:border-blue-500 hover:shadow-2xl transition group flex flex-col gap-4 text-left shadow-xl shadow-slate-200/50">
-                    <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
-                        <FileText size={24} />
-                    </div>
-                    <span className="font-black text-slate-800 text-lg uppercase tracking-tighter">Publish Article</span>
-                  </button>
-                </>
-              )}
+                <button onClick={() => setShowEpisodeModal(true)} className="bg-white p-6 rounded-3xl border border-slate-100 hover:border-blue-500 hover:shadow-2xl transition group flex flex-col gap-4 text-left shadow-xl shadow-slate-200/50">
+                  <div className="w-12 h-12 bg-red-50 rounded-2xl flex items-center justify-center text-red-600 group-hover:scale-110 transition-transform">
+                      <MonitorPlay size={24} />
+                  </div>
+                  <span className="font-black text-slate-800 text-lg uppercase tracking-tighter">Upload Episode</span>
+                </button>
+                <button onClick={() => setShowArticleModal(true)} className="bg-white p-6 rounded-3xl border border-slate-100 hover:border-blue-500 hover:shadow-2xl transition group flex flex-col gap-4 text-left shadow-xl shadow-slate-200/50">
+                  <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
+                      <FileText size={24} />
+                  </div>
+                  <span className="font-black text-slate-800 text-lg uppercase tracking-tighter">Publish Article</span>
+                </button>
 
-              <button onClick={() => setShowDestinations(true)} className="bg-white p-6 rounded-3xl border border-slate-100 hover:border-slate-400 hover:shadow-2xl transition group flex flex-col gap-4 text-left shadow-xl shadow-slate-200/50">
-                <div className="w-12 h-12 bg-slate-100 rounded-2xl flex items-center justify-center text-slate-600 group-hover:scale-110 transition-transform">
-                    <Globe size={24} />
-                </div>
-                <span className="font-black text-slate-800 text-lg uppercase tracking-tighter">Destinations</span>
-              </button>
+                <button onClick={() => setShowDestinations(true)} className="bg-white p-6 rounded-3xl border border-slate-100 hover:border-slate-400 hover:shadow-2xl transition group flex flex-col gap-4 text-left shadow-xl shadow-slate-200/50">
+                  <div className="w-12 h-12 bg-slate-100 rounded-2xl flex items-center justify-center text-slate-600 group-hover:scale-110 transition-transform">
+                      <Globe size={24} />
+                  </div>
+                  <span className="font-black text-slate-800 text-lg uppercase tracking-tighter">Destinations</span>
+                </button>
 
-              <Link to="/apply?type=live" className="bg-white p-6 rounded-3xl border border-slate-100 hover:border-slate-400 hover:shadow-2xl transition group flex flex-col gap-4 shadow-xl shadow-slate-200/50">
-                <div className="w-12 h-12 bg-slate-100 rounded-2xl flex items-center justify-center text-slate-600 group-hover:scale-110 transition-transform">
-                    <Video size={24} />
-                </div>
-                <span className="font-black text-slate-800 text-lg uppercase tracking-tighter">Apply Live</span>
-              </Link>
-          </div>
-        </section>
+                <Link to="/apply?type=live" className="bg-white p-6 rounded-3xl border border-slate-100 hover:border-slate-400 hover:shadow-2xl transition group flex flex-col gap-4 shadow-xl shadow-slate-200/50">
+                  <div className="w-12 h-12 bg-slate-100 rounded-2xl flex items-center justify-center text-slate-600 group-hover:scale-110 transition-transform">
+                      <Video size={24} />
+                  </div>
+                  <span className="font-black text-slate-800 text-lg uppercase tracking-tighter">Apply Live</span>
+                </Link>
+            </div>
+          </section>
+        )}
 
         {/* STATUS TABLE */}
         <section className="bg-white rounded-3xl border border-slate-100 shadow-2xl shadow-slate-200/50 overflow-hidden">
@@ -1238,16 +1237,16 @@ const AdminDashboard: React.FC = () => {
                 {displayInterviews.map((interview) => (
                   <React.Fragment key={interview.id}>
                     <tr 
-                      className={`hover:bg-slate-50/50 transition cursor-pointer ${expandedRow === interview.id ? 'bg-slate-50 shadow-inner' : ''}`}
+                      className={`hover:bg-slate-50/50 transition cursor-pointer group ${expandedRow === interview.id ? 'bg-slate-50 shadow-inner' : ''}`}
                       onClick={() => setExpandedRow(expandedRow === interview.id ? null : interview.id)}
                     >
                       <td className="px-8 py-5">
                         <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 rounded-2xl bg-white border border-slate-100 shadow-sm flex items-center justify-center font-black text-slate-900 text-sm">
+                          <div className="w-12 h-12 rounded-2xl bg-white border border-slate-100 shadow-sm flex items-center justify-center font-black text-slate-900 text-sm group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
                             {interview.founderName.charAt(0)}
                           </div>
                           <div>
-                            <span className="font-black text-slate-900 block uppercase tracking-tight">{interview.founderName}</span>
+                            <span className="font-black text-slate-900 block uppercase tracking-tight group-hover:text-blue-600 transition-colors">{interview.founderName}</span>
                             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{interview.companyName}</span>
                           </div>
                         </div>
@@ -1279,8 +1278,8 @@ const AdminDashboard: React.FC = () => {
                          <div className="flex items-center justify-end gap-2" onClick={e => e.stopPropagation()}>
                             {isAdmin && interview.status === 'pending' && (
                                <>
-                                  <button onClick={() => handleApprove(interview.id, interview.applicationType)} className="p-2 text-green-600 hover:bg-green-100 rounded-full transition"><CircleCheck size={18} /></button>
-                                  <button onClick={() => handleReject(interview.id)} className="p-2 text-red-600 hover:bg-red-100 rounded-full transition"><CircleX size={18} /></button>
+                                  <button onClick={() => handleApprove(interview.id, interview.applicationType)} className="p-2 text-green-600 hover:bg-green-100 rounded-full transition" title="Approve"><CircleCheck size={18} /></button>
+                                  <button onClick={() => handleReject(interview.id)} className="p-2 text-red-600 hover:bg-red-100 rounded-full transition" title="Reject"><CircleX size={18} /></button>
                                </>
                             )}
                             <button className="p-2 text-slate-300 hover:text-slate-900 transition-all"><ChevronRight size={20} className={`transition-transform ${expandedRow === interview.id ? 'rotate-90 text-slate-900' : ''}`} /></button>
@@ -1290,33 +1289,128 @@ const AdminDashboard: React.FC = () => {
                     
                     {expandedRow === interview.id && (
                       <tr className="bg-slate-50/50">
-                        <td colSpan={4} className="px-12 py-8 border-l-4 border-l-blue-600">
-                           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-                              <div className="space-y-4">
-                                 <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Contextual Keywords</h4>
-                                 <div className="flex flex-wrap gap-2">
-                                    {interview.metaKeywords?.map(kw => (
-                                      <span key={kw} className="bg-white px-3 py-1 rounded-lg text-xs font-bold border border-slate-100 text-slate-600">#{kw}</span>
-                                    ))}
+                        <td colSpan={4} className="p-0 border-l-8 border-l-blue-600 animate-in slide-in-from-top-2">
+                           <div className="p-12 space-y-12">
+                              {/* HEADER: SUBMISSION DOSSIER */}
+                              <div className="flex items-center justify-between">
+                                 <div className="flex items-center gap-4">
+                                    <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-blue-600 shadow-xl border border-slate-100">
+                                       <Activity size={28} />
+                                    </div>
+                                    <div>
+                                       <h4 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Submission Dossier</h4>
+                                       <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em]">Application ID: FS-{interview.id.substring(0, 8)}</p>
+                                    </div>
                                  </div>
-                                 <p className="text-sm text-slate-700 leading-relaxed italic border-l-2 border-slate-200 pl-4 py-1">
-                                    "{interview.description || 'No pitch summary provided.'}"
-                                 </p>
+                                 <div className="flex gap-4">
+                                    {isAdmin && interview.status === 'pending' && (
+                                      <>
+                                        <button 
+                                          onClick={() => handleApprove(interview.id, interview.applicationType)}
+                                          className="px-6 py-3 bg-green-600 text-white rounded-xl text-xs font-black uppercase tracking-widest flex items-center gap-2 hover:bg-green-700 transition shadow-lg"
+                                        >
+                                          <CircleCheck size={16} /> Deploy Submission
+                                        </button>
+                                        <button 
+                                          onClick={() => handleReject(interview.id)}
+                                          className="px-6 py-3 bg-white border border-red-100 text-red-600 rounded-xl text-xs font-black uppercase tracking-widest flex items-center gap-2 hover:bg-red-50 transition"
+                                        >
+                                          <CircleX size={16} /> Decline
+                                        </button>
+                                      </>
+                                    )}
+                                    <button className="px-6 py-3 bg-slate-900 text-white rounded-xl text-xs font-black uppercase tracking-widest flex items-center gap-2 hover:bg-black transition shadow-lg">
+                                       <Download size={16} /> Export Data
+                                    </button>
+                                 </div>
                               </div>
-                              <div className="grid grid-cols-2 gap-6 bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
-                                 <div>
-                                    <h5 className="text-[9px] font-black text-slate-400 uppercase mb-1">Date Logged</h5>
-                                    <p className="text-sm font-black text-slate-900">{interview.date}</p>
+
+                              <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+                                 {/* LEFT: FORM DATA */}
+                                 <div className="lg:col-span-5 space-y-10">
+                                    <div className="grid grid-cols-2 gap-6">
+                                       <div className="space-y-1.5 p-4 bg-white rounded-2xl border border-slate-100 shadow-sm">
+                                          <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5"><Mail size={12}/> Email Address</label>
+                                          <p className="text-sm font-black text-slate-900 truncate">{interview.email || 'Not Provided'}</p>
+                                       </div>
+                                       <div className="space-y-1.5 p-4 bg-white rounded-2xl border border-slate-100 shadow-sm">
+                                          <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5"><Phone size={12}/> Phone Number</label>
+                                          <p className="text-sm font-black text-slate-900">{interview.phoneNumber || 'Not Provided'}</p>
+                                       </div>
+                                       <div className="space-y-1.5 p-4 bg-white rounded-2xl border border-slate-100 shadow-sm">
+                                          <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5"><MapPin size={12}/> Operational City</label>
+                                          <p className="text-sm font-black text-slate-900">{interview.city || 'Global'}</p>
+                                       </div>
+                                       <div className="space-y-1.5 p-4 bg-white rounded-2xl border border-slate-100 shadow-sm">
+                                          <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5"><Briefcase size={12}/> Designation</label>
+                                          <p className="text-sm font-black text-slate-900">{interview.position || 'Founder'}</p>
+                                       </div>
+                                    </div>
+
+                                    <div className="space-y-4">
+                                       <h5 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">The Pitch Narrative</h5>
+                                       <div className="bg-white p-8 rounded-[32px] border border-slate-100 shadow-inner relative">
+                                          <div className="absolute top-4 right-6 opacity-5">
+                                             <FileText size={64} />
+                                          </div>
+                                          <p className="text-slate-700 leading-relaxed font-medium italic">
+                                             "{interview.description || 'No pitch summary was provided for this application.'}"
+                                          </p>
+                                       </div>
+                                    </div>
+
+                                    {interview.applicationType === 'live' && (
+                                       <div className="bg-red-50 p-6 rounded-[28px] border border-red-100 flex items-center justify-between">
+                                          <div className="flex items-center gap-4">
+                                             <div className="w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center text-white shadow-lg">
+                                                <Calendar size={20} />
+                                             </div>
+                                             <div>
+                                                <h6 className="text-xs font-black text-red-900 uppercase">Live Broadcast Slot</h6>
+                                                <p className="text-[11px] font-bold text-red-600">{interview.scheduledDate ? new Date(interview.scheduledDate).toLocaleString() : 'Not Scheduled'}</p>
+                                             </div>
+                                          </div>
+                                       </div>
+                                    )}
                                  </div>
-                                 <div>
-                                    <h5 className="text-[9px] font-black text-slate-400 uppercase mb-1">Author</h5>
-                                    <p className="text-sm font-black text-slate-900">{interview.author || interview.founderName}</p>
-                                 </div>
-                                 <div className="col-span-2">
-                                    <h5 className="text-[9px] font-black text-slate-400 uppercase mb-1">Permanent Resource Link</h5>
-                                    <Link to={interview.category === 'article' ? `/articles/${interview.id}` : `/watch/${interview.id}`} className="text-sm font-black text-blue-600 hover:text-blue-700 flex items-center gap-2">
-                                      <LinkIcon size={16}/> View Published Entity
-                                    </Link>
+
+                                 {/* RIGHT: VIDEO PREVIEW */}
+                                 <div className="lg:col-span-7 space-y-6">
+                                    <div className="flex items-center justify-between ml-1">
+                                       <h5 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Multimedia Asset Preview</h5>
+                                       <span className="text-[9px] font-black text-blue-600 uppercase tracking-widest bg-blue-50 px-3 py-1 rounded-full border border-blue-100">4K Raw Upload</span>
+                                    </div>
+                                    
+                                    <div className="relative group/player rounded-[40px] overflow-hidden shadow-2xl bg-black border-[12px] border-white ring-1 ring-slate-100">
+                                       {/* WATERMARK REQ: Logo in top right corner */}
+                                       <div className="absolute top-6 right-6 z-20 pointer-events-none opacity-40 select-none">
+                                          <div className="flex flex-col items-end">
+                                             <span className="text-xs font-black text-white tracking-tighter uppercase italic">FOUNDER</span>
+                                             <span className="text-xs font-black text-red-500 tracking-tighter uppercase italic -mt-1">STORYS</span>
+                                          </div>
+                                       </div>
+
+                                       <video 
+                                          src={interview.videoUrl || "https://media.w3.org/2010/05/sintel/trailer_hd.mp4"}
+                                          className="w-full aspect-video object-cover"
+                                          poster={interview.thumbnail}
+                                          controls
+                                       />
+                                       
+                                       {/* Download Overlay */}
+                                       <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover/player:opacity-100 transition-opacity flex items-center justify-center">
+                                          <button className="bg-white text-slate-900 px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-3 shadow-2xl transform scale-90 group-hover/player:scale-100 transition-transform">
+                                             <Download size={18} /> Download for Final Edit
+                                          </button>
+                                       </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-4 p-6 bg-slate-50 rounded-3xl border border-slate-100 border-dashed">
+                                       <CircleAlert className="text-blue-500 shrink-0" size={20} />
+                                       <p className="text-[10px] text-slate-500 font-bold leading-relaxed uppercase tracking-tight">
+                                         Admin Tip: Verify identity documents and brand logos before approving for global broadcast. Check for audio sync and high-bitrate visual clarity.
+                                       </p>
+                                    </div>
                                  </div>
                               </div>
                            </div>
